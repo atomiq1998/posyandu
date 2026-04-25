@@ -4,7 +4,9 @@ async function wargaUnderFive(conn, wargaId) {
     [wargaId]
   );
   if (!rows || rows.length === 0) return false;
-  return Number(rows[0].y) < 5;
+  const y = rows[0].y;
+  if (y == null || y === "") return false;
+  return Number(y) < 5;
 }
 
 module.exports = { wargaUnderFive };

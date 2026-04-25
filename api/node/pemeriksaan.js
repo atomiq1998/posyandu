@@ -71,9 +71,10 @@ module.exports = async (req, res) => {
         "INSERT INTO pemeriksaan_balita (warga_id, tanggal, berat_kg, tinggi_cm, catatan) VALUES (?,?,?,?,?)",
         [wid, tgl, Number(berat), Number(tinggi), catatan]
       );
+      const newId = Number(ret.insertId);
       const [rows] = await conn.execute(
         "SELECT p.*, w.nama, w.nik AS warga_nik FROM pemeriksaan_balita p JOIN warga w ON w.id = p.warga_id WHERE p.id = ?",
-        [ret.insertId]
+        [newId]
       );
       return sendJson(res, 201, { ok: true, pemeriksaan: rows[0] });
     }

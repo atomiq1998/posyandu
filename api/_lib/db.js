@@ -42,6 +42,7 @@ function db() {
       queueLimit: 0,
       charset: "utf8mb4",
       ssl: resolveSsl(),
+      dateStrings: true,
     });
   }
   return pool;

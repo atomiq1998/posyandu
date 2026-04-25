@@ -27,6 +27,17 @@
     };
   })();
 
+  /** Tampilkan kolom DATE / ISO (…T00:00:00.000Z) sebagai YYYY-MM-DD. */
+  function dateOnly(v) {
+    if (v == null || v === '') return '';
+    if (typeof v === 'object' && v instanceof Date && !Number.isNaN(v.getTime())) {
+      return v.toISOString().split('T')[0];
+    }
+    const s = String(v).trim();
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : s;
+  }
+
   function get(path, opts) {
     return fetch(window.apiPath(path), { credentials: 'include', method: 'GET' }).then(function (r) {
       return r.json().then(function (d) {
@@ -117,7 +128,7 @@
         tr.innerHTML =
           '<td><a href="#detail-warga" class="w-link-nik" data-warga-id="' + w.id + '">' + esc(String(w.nik)) + '</a></td>' +
           '<td>' + esc(String(w.nama)) + '</td>' +
-          '<td>' + esc(String(w.tanggal_lahir)) + '</td>' +
+          '<td>' + esc(dateOnly(w.tanggal_lahir)) + '</td>' +
           '<td>' + esc(String(w.jenis_kelamin)) + '</td>' +
           '<td class="muted">' + esc(shortA) + '</td>';
         wargaTb.appendChild(tr);
@@ -281,7 +292,7 @@
       setDetWarga('wd-kk', w.no_kk);
       setDetWarga('wd-alamat', w.alamat);
       setDetWarga('wd-tl', w.tempat_lahir);
-      setDetWarga('wd-tg', w.tanggal_lahir);
+      setDetWarga('wd-tg', dateOnly(w.tanggal_lahir));
       setDetWarga('wd-jk', wargaJkLabel(w.jenis_kelamin));
       setDetWarga('wd-ag', w.agama);
       setDetWarga('wd-wn', w.warga_negara);
@@ -416,7 +427,7 @@
       document.getElementById('w-nm').value = w.nama || '';
       document.getElementById('w-nk').value = w.nik || '';
       document.getElementById('w-tl').value = w.tempat_lahir || '';
-      document.getElementById('w-tg').value = w.tanggal_lahir || '';
+      document.getElementById('w-tg').value = dateOnly(w.tanggal_lahir) || '';
       document.getElementById('w-jk').value = w.jenis_kelamin || 'L';
       document.getElementById('w-ag').value = w.agama || '';
       document.getElementById('w-wn').value = w.warga_negara || 'WNI';
@@ -457,7 +468,7 @@
         tr.innerHTML =
           '<td><a href="#detail-warga" class="w-link-nik" data-warga-id="' + w.id + '">' + esc(String(w.nik)) + '</a></td>' +
           '<td>' + esc(String(w.nama)) + '</td>' +
-          '<td>' + esc(String(w.tanggal_lahir)) + '</td>' +
+          '<td>' + esc(dateOnly(w.tanggal_lahir)) + '</td>' +
           '<td>' + (w.umur_bulan != null ? esc(String(w.umur_bulan)) : '—') + '</td>' +
           '<td class="muted">' + esc(shortA) + '</td>';
         balitaTb.appendChild(tr);
@@ -499,7 +510,7 @@
   }
 
   function buildCharts(rows) {
-    const labels = rows.map(function (r) { return String(r.tanggal || ''); });
+    const labels = rows.map(function (r) { return dateOnly(r.tanggal); });
     const bbs = rows.map(function (r) { return parseFloat(r.berat_kg) || 0; });
     const tbs = rows.map(function (r) { return parseFloat(r.tinggi_cm) || 0; });
     const ctxB = document.getElementById('c-bb') && document.getElementById('c-bb').getContext('2d');
@@ -563,7 +574,7 @@
       if (d.warga) {
         pmrN.textContent = d.warga.nik;
         const tl = d.warga.tempat_lahir || '';
-        const tgl = d.warga.tanggal_lahir || '';
+        const tgl = dateOnly(d.warga.tanggal_lahir) || '';
         pmrL.textContent = (tl && tgl) ? (tl + ', ' + tgl) : tgl;
         pmrBio.removeAttribute('hidden');
       }
@@ -605,7 +616,7 @@
         list.forEach(function (r) {
           const tr = document.createElement('tr');
           tr.innerHTML =
-            '<td>' + esc(String(r.tanggal)) + '</td>' +
+            '<td>' + esc(dateOnly(r.tanggal)) + '</td>' +
             '<td>' + esc(String(r.berat_kg)) + '</td>' +
             '<td>' + esc(String(r.tinggi_cm)) + '</td>' +
             '<td class="muted">' + esc(r.catatan ? String(r.catatan) : '—') + '</td>' +
@@ -660,7 +671,7 @@
     const r = (list || []).find(function (x) { return String(x.id) === String(pid); });
     if (!r) return;
     document.getElementById('e-pid').value = String(r.id);
-    document.getElementById('e-ptg').value = String(r.tanggal || '');
+    document.getElementById('e-ptg').value = dateOnly(r.tanggal) || '';
     document.getElementById('e-pbb').value = r.berat_kg;
     document.getElementById('e-ptb').value = r.tinggi_cm;
     document.getElementById('e-pct').value = r.catatan || '';

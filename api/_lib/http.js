@@ -1,7 +1,21 @@
+function jsonReplacer(_key, value) {
+  if (typeof value === "bigint") return Number(value);
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  return value;
+}
+
 function sendJson(res, code, data) {
   res.statusCode = code;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify(data));
+  try {
+    res.end(JSON.stringify(data, jsonReplacer));
+  } catch (e) {
+    console.error(e);
+    res.statusCode = 500;
+    res.end(JSON.stringify({ ok: false, error: "Server error" }, jsonReplacer));
+  }
 }
 
 function sendServerError(res, err) {
