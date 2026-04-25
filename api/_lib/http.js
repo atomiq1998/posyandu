@@ -4,6 +4,31 @@ function sendJson(res, code, data) {
   res.end(JSON.stringify(data));
 }
 
+function sendServerError(res, err) {
+  console.error(err);
+  let error = "Server error";
+  const code = err && err.code;
+  const msg = err && err.message ? String(err.message) : "";
+  if (/^Missing DB env:/i.test(msg)) {
+    error =
+      "Database belum dikonfigurasi di deployment (tambahkan DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME di Environment Variables Vercel).";
+  } else if (code === "ECONNREFUSED" || code === "ETIMEDOUT" || code === "ENOTFOUND") {
+    error = "Tidak bisa terhubung ke server database (host/port atau jaringan).";
+  } else if (code === "ER_ACCESS_DENIED_ERROR") {
+    error = "Akses database ditolak (periksa DB_USER / DB_PASS).";
+  } else if (code === "ER_BAD_DB_ERROR") {
+    error = "Nama database tidak ditemukan (periksa DB_NAME).";
+  } else if (
+    code === "HANDSHAKE_SSL_ERROR" ||
+    code === "DEPTH_ZERO_SELF_SIGNED_CERT" ||
+    /self-signed certificate|certificate chain|SSL connection/i.test(msg)
+  ) {
+    error =
+      "Koneksi TLS ke database gagal. Jika penyedia memakai sertifikat self-signed, set DB_SSL_INSECURE=1 di Vercel; jika tidak perlu TLS, set DB_SSL=0.";
+  }
+  return sendJson(res, 500, { ok: false, error });
+}
+
 function methodNotAllowed(res) {
   sendJson(res, 405, { ok: false, error: "Method not allowed" });
 }
@@ -43,4 +68,4 @@ async function readJsonBody(req) {
   }
 }
 
-module.exports = { sendJson, methodNotAllowed, getQuery, readJsonBody };
+module.exports = { sendJson, sendServerError, methodNotAllowed, getQuery, readJsonBody };

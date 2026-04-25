@@ -1,6 +1,6 @@
 const { db } = require("../_lib/db");
 const { requireAuth } = require("../_lib/auth");
-const { sendJson, methodNotAllowed } = require("../_lib/http");
+const { sendJson, sendServerError, methodNotAllowed } = require("../_lib/http");
 
 module.exports = async (req, res) => {
   if (req.method !== "GET") return methodNotAllowed(res);
@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
       ORDER BY w.tanggal_lahir DESC, w.nama`
     );
     return sendJson(res, 200, { ok: true, balita: rows });
-  } catch (_e) {
-    return sendJson(res, 500, { ok: false, error: "Server error" });
+  } catch (e) {
+    return sendServerError(res, e);
   }
 };

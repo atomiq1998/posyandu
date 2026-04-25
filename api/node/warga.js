@@ -1,6 +1,6 @@
 const { db } = require("../_lib/db");
 const { requireAuth } = require("../_lib/auth");
-const { sendJson, methodNotAllowed, getQuery, readJsonBody } = require("../_lib/http");
+const { sendJson, sendServerError, methodNotAllowed, getQuery, readJsonBody } = require("../_lib/http");
 
 function normalizeWargaInput(body, existing) {
   const out = existing || {
@@ -195,6 +195,6 @@ module.exports = async (req, res) => {
 
     return methodNotAllowed(res);
   } catch (e) {
-    return sendJson(res, 500, { ok: false, error: "Server error" });
+    return sendServerError(res, e);
   }
 };

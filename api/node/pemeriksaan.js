@@ -1,7 +1,7 @@
 const { db } = require("../_lib/db");
 const { requireAuth } = require("../_lib/auth");
 const { wargaUnderFive } = require("../_lib/domain");
-const { sendJson, methodNotAllowed, getQuery, readJsonBody } = require("../_lib/http");
+const { sendJson, sendServerError, methodNotAllowed, getQuery, readJsonBody } = require("../_lib/http");
 
 module.exports = async (req, res) => {
   if (!requireAuth(req, res)) return;
@@ -140,7 +140,7 @@ module.exports = async (req, res) => {
     }
 
     return methodNotAllowed(res);
-  } catch (_e) {
-    return sendJson(res, 500, { ok: false, error: "Server error" });
+  } catch (e) {
+    return sendServerError(res, e);
   }
 };

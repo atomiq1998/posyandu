@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const { db } = require("../../_lib/db");
-const { sendJson, methodNotAllowed, readJsonBody } = require("../../_lib/http");
+const { sendJson, sendServerError, methodNotAllowed, readJsonBody } = require("../../_lib/http");
 const { signAuth, setAuthCookie } = require("../../_lib/auth");
 
 module.exports = async (req, res) => {
@@ -37,6 +37,6 @@ module.exports = async (req, res) => {
     setAuthCookie(req, res, token);
     return sendJson(res, 200, { ok: true, user });
   } catch (e) {
-    return sendJson(res, 500, { ok: false, error: "Server error" });
+    return sendServerError(res, e);
   }
 };
