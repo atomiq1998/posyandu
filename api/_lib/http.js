@@ -24,7 +24,7 @@ function sendServerError(res, err) {
     /self-signed certificate|certificate chain|SSL connection/i.test(msg)
   ) {
     error =
-      "Koneksi TLS ke database gagal. Jika penyedia memakai sertifikat self-signed, set DB_SSL_INSECURE=1 di Vercel; jika tidak perlu TLS, set DB_SSL=0.";
+      "Koneksi TLS ke database gagal. Coba set DB_SSL=0 jika server tidak memakai TLS, atau hubungi penyedia hosting. Verifikasi CA ketat: DB_SSL_STRICT=1 (butuh CA resmi).";
   }
   return sendJson(res, 500, { ok: false, error });
 }

@@ -14,10 +14,13 @@ function resolveSsl() {
 
   if (!wantSsl) return undefined;
 
-  if (process.env.DB_SSL_INSECURE === "1") {
-    return { rejectUnauthorized: false };
+  const strict =
+    process.env.DB_SSL_STRICT === "1" || String(process.env.DB_SSL_STRICT || "").toLowerCase() === "true";
+  if (strict) {
+    return {};
   }
-  return {};
+  // Default: TLS dengan CA self-signed (umum di shared MySQL). Verifikasi CA penuh: DB_SSL_STRICT=1.
+  return { rejectUnauthorized: false };
 }
 
 function db() {
