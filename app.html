@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <title>Posyandu — Aplikasi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div class="app-shell" id="app">
+      <header class="topnav">
+        <h1>Posyandu</h1>
+        <div class="nav-links">
+          <button type="button" data-to="warga" class="btn-ghost">Data warga</button>
+          <button type="button" data-to="balita" class="btn-ghost">Data balita</button>
+          <button type="button" data-to="pemeriksaan" class="btn-ghost">Pemeriksaan</button>
+          <button type="button" id="b-logout" class="btn btn-ghost" style="border-color: var(--border)">Keluar</button>
+        </div>
+      </header>
+
+      <section class="page" data-page="warga">
+        <h2>Data warga</h2>
+        <div class="panel">
+          <div class="toolbar">
+            <input type="search" id="warga-q" class="toolbar__search" placeholder="Cari nama / NIK…" />
+            <button type="button" class="btn btn-primary" id="warga-new" onclick="if (typeof window.psyBukaTambahWarga==='function'){window.psyBukaTambahWarga();} return false;">Tambah warga</button>
+          </div>
+          <div class="table-wrap" style="border: 0; border-radius: 0; margin: 0; padding: 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>NIK</th>
+                  <th>Nama</th>
+                  <th>Tgl lahir</th>
+                  <th>L/P</th>
+                  <th>Alamat (ringkas)</th>
+                </tr>
+              </thead>
+              <tbody id="warga-tb"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" data-page="balita" hidden>
+        <h2>Data balita (usia &lt; 5 tahun)</h2>
+        <p class="muted" style="margin: -0.2rem 0 0.8rem">Otomatis dari warga; kelahiran menentukan jika masih tercatat sebagai balita.</p>
+        <div class="panel">
+          <div class="table-wrap" style="border: 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>NIK</th>
+                  <th>Nama</th>
+                  <th>Tgl lahir</th>
+                  <th>Usia (bln)</th>
+                  <th>Alamat (ringkas)</th>
+                </tr>
+              </thead>
+              <tbody id="balita-tb"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" data-page="pemeriksaan" hidden>
+        <h2>Pemeriksaan balita</h2>
+        <p class="muted" style="margin: -0.2rem 0 0.6rem">Pilih balita; grafik &amp; tabel memakai riwayat BB/TB per tanggal.</p>
+        <div class="panel">
+          <div class="picker-row">
+            <div class="field">
+              <label for="pmr-w">Balita</label>
+              <select id="pmr-w" title="Pilih">
+                <option value="">— Pilih balita —</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-sm" id="pmr-refresh">Perbarui daftar balita</button>
+          </div>
+          <div class="form-grid cols-2" id="pmr-bio" hidden>
+            <div>
+              <span class="muted">NIK</span>
+              <div id="pmr-nik">—</div>
+            </div>
+            <div>
+              <span class="muted">Lahir</span>
+              <div id="pmr-lahir">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="pmr-form-block" hidden>
+          <h3 class="h3" style="font-size: 0.95rem; margin: 0 0 0.5rem; font-weight: 600">Entri pemeriksaan baru</h3>
+          <div class="form-grid cols-2">
+            <div>
+              <label for="pmr-tg">Tanggal</label>
+              <input type="date" id="pmr-tg" required />
+            </div>
+            <div></div>
+            <div>
+              <label for="pmr-bb">Berat (kg)</label>
+              <input type="number" id="pmr-bb" step="0.01" min="0" max="50" required />
+            </div>
+            <div>
+              <label for="pmr-tinggi">Tinggi (cm)</label>
+              <input type="number" id="pmr-tinggi" step="0.1" min="0" max="200" required />
+            </div>
+            <div style="grid-column: 1 / -1">
+              <label for="pmr-ct">Catatan (opsional)</label>
+              <textarea id="pmr-ct" rows="2" placeholder="Catatan kesehatan"></textarea>
+            </div>
+            <div style="grid-column: 1 / -1">
+              <button type="button" class="btn btn-primary" id="pmr-save">Simpan pemeriksaan</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" id="pmr-tbl-block" hidden>
+          <h3 class="h3" style="font-size: 0.95rem; margin: 0 0 0.5rem; font-weight: 600">Riwayat</h3>
+          <div class="table-wrap" style="border: 0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>BB (kg)</th>
+                  <th>TB (cm)</th>
+                  <th>Catatan</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="pmr-riwayat-tb"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="charts" id="pmr-charts-wrap" hidden>
+          <div class="panel" id="pmr-ch-b" hidden>
+            <h3 class="h3" style="font-size: 0.95rem; margin: 0 0 0.5rem; font-weight: 600">Grafik berat badan (kg) vs waktu</h3>
+            <div class="chart-box">
+              <canvas id="c-bb" height="180" aria-label="Grafik berat"></canvas>
+            </div>
+          </div>
+          <div class="panel" id="pmr-ch-t" hidden>
+            <h3 class="h3" style="font-size: 0.95rem; margin: 0 0 0.5rem; font-weight: 600">Grafik tinggi badan (cm) vs waktu</h3>
+            <div class="chart-box">
+              <canvas id="c-tb" height="180" aria-label="Grafik tinggi"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="m-w" class="modal" hidden>
+      <div class="card">
+        <h2 id="m-w-t">Tambah warga</h2>
+        <form id="f-w" class="form-grid cols-2" style="gap: 0.5rem 1rem">
+          <input type="hidden" id="w-id" value="" />
+          <div style="grid-column: 1 / -1">
+            <label for="w-a">Alamat</label>
+            <textarea id="w-a" rows="2" required></textarea>
+          </div>
+          <div>
+            <label for="w-kk">No. KK</label>
+            <input type="text" id="w-kk" />
+          </div>
+          <div>
+            <label for="w-nm">Nama *</label>
+            <input type="text" id="w-nm" required />
+          </div>
+          <div>
+            <label for="w-nk">NIK (10–16 angka) *</label>
+            <input type="text" id="w-nk" inputmode="numeric" maxlength="16" required />
+          </div>
+          <div>
+            <label for="w-tl">Tempat lahir</label>
+            <input type="text" id="w-tl" />
+          </div>
+          <div>
+            <label for="w-tg">Tanggal lahir *</label>
+            <input type="date" id="w-tg" required />
+          </div>
+          <div>
+            <label for="w-jk">Jenis kelamin *</label>
+            <select id="w-jk" required>
+              <option value="L">Laki-laki</option>
+              <option value="P">Perempuan</option>
+            </select>
+          </div>
+          <div>
+            <label for="w-ag">Agama</label>
+            <input type="text" id="w-ag" />
+          </div>
+          <div>
+            <label for="w-wn">Warga negara</label>
+            <input type="text" id="w-wn" value="WNI" />
+          </div>
+          <div>
+            <label for="w-hb">Hubungan dalam keluarga</label>
+            <input type="text" id="w-hb" />
+          </div>
+          <div>
+            <label for="w-sn">Status nikah</label>
+            <input type="text" id="w-sn" />
+          </div>
+          <div>
+            <label for="w-pd">Pendidikan</label>
+            <input type="text" id="w-pd" />
+          </div>
+          <div>
+            <label for="w-pj">Pekerjaan</label>
+            <input type="text" id="w-pj" />
+          </div>
+          <div>
+            <label for="w-st">Status warga *</label>
+            <select id="w-st" required>
+              <option value="aktif">Aktif</option>
+              <option value="nonaktif">Non-aktif</option>
+            </select>
+          </div>
+        </form>
+        <p id="m-w-e" class="msg msg-err" hidden></p>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="m-w-ok">Simpan</button>
+          <button type="button" class="btn" id="m-w-x">Batal</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="m-w-d" class="modal" hidden aria-hidden="true">
+      <div class="card" style="max-width: 640px">
+        <h2 id="m-w-d-t">Detail warga</h2>
+        <dl class="warga-detail">
+          <div class="warga-detail__row">
+            <dt>NIK</dt>
+            <dd id="wd-nik">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Nama</dt>
+            <dd id="wd-nama">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>No. KK</dt>
+            <dd id="wd-kk">—</dd>
+          </div>
+          <div class="warga-detail__row warga-detail__row--wide">
+            <dt>Alamat</dt>
+            <dd id="wd-alamat">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Tempat lahir</dt>
+            <dd id="wd-tl">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Tanggal lahir</dt>
+            <dd id="wd-tg">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Jenis kelamin</dt>
+            <dd id="wd-jk">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Agama</dt>
+            <dd id="wd-ag">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Warga negara</dt>
+            <dd id="wd-wn">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Hubungan dalam keluarga</dt>
+            <dd id="wd-hb">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Status nikah</dt>
+            <dd id="wd-sn">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Pendidikan</dt>
+            <dd id="wd-pd">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Pekerjaan</dt>
+            <dd id="wd-pj">—</dd>
+          </div>
+          <div class="warga-detail__row">
+            <dt>Status</dt>
+            <dd id="wd-st">—</dd>
+          </div>
+        </dl>
+        <p class="muted" style="font-size: 0.85rem; margin: 0.5rem 0 0" id="wd-meta">—</p>
+        <div class="actions">
+          <button type="button" class="btn" id="m-w-d-tutup">Tutup</button>
+          <button type="button" class="btn btn-danger" id="m-w-d-hapus">Hapus</button>
+          <button type="button" class="btn btn-primary" id="m-w-d-ubah">Ubah data</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="m-p" class="modal" hidden>
+      <div class="card" style="max-width: 500px">
+        <h2>Edit pemeriksaan</h2>
+        <input type="hidden" id="e-pid" value="" />
+        <div class="form-grid" style="gap: 0.5rem; margin-top: 0.5rem">
+          <div>
+            <label for="e-ptg">Tanggal</label>
+            <input type="date" id="e-ptg" required />
+          </div>
+          <div class="form-grid cols-2">
+            <div>
+              <label for="e-pbb">Berat (kg)</label>
+              <input type="number" id="e-pbb" step="0.01" min="0" required />
+            </div>
+            <div>
+              <label for="e-ptb">Tinggi (cm)</label>
+              <input type="number" id="e-ptb" step="0.1" min="0" required />
+            </div>
+          </div>
+          <div>
+            <label for="e-pct">Catatan</label>
+            <textarea id="e-pct" rows="2"></textarea>
+          </div>
+        </div>
+        <p id="m-p-e" class="msg msg-err" hidden></p>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="m-p-ok">Simpan</button>
+          <button type="button" class="btn" id="m-p-x">Batal</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/core.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

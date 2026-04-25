@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <title>Login — Posyandu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="login-page">
+    <div class="card" style="text-align: center">
+      <h1 style="margin: 0 0 0.3rem; font-size: 1.35rem">Posyandu</h1>
+      <p class="muted" style="margin: 0 0 1.1rem; font-size: 0.92rem">Sistem pencatatan warga, balita, &amp; pemeriksaan</p>
+      <form id="f-login" style="text-align: left; margin-top: 0.4rem" autocomplete="on">
+        <label for="u">Nama pengguna</label>
+        <input type="text" id="u" name="username" required autocomplete="username" />
+        <label for="p" style="margin-top: 0.6rem">Kata sandi</label>
+        <input type="password" id="p" name="password" required autocomplete="current-password" />
+        <p id="e-login" class="msg msg-err" hidden style="text-align: center; margin: 0.5rem 0 0.25rem 0"></p>
+        <button class="btn btn-primary" type="submit" id="b-login" style="width: 100%; margin-top: 0.6rem; padding: 0.5rem 1rem">Masuk</button>
+      </form>
+      <p class="muted" style="font-size: 0.8rem; margin: 0.8rem 0 0; text-align: left">Bawa: <code>admin</code> / <code>admin123</code> (setelah import database)</p>
+    </div>
+    <script src="js/core.js"></script>
+    <script src="js/login.js"></script>
+  </body>
+</html>
