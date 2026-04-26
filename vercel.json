@@ -3,6 +3,7 @@
     { "source": "/api/auth/login.php", "destination": "/api/node/auth/login" },
     { "source": "/api/auth/me.php", "destination": "/api/node/auth/me" },
     { "source": "/api/auth/logout.php", "destination": "/api/node/auth/logout" },
+    { "source": "/api/auth/change-password.php", "destination": "/api/node/auth/change-password" },
     { "source": "/api/warga.php", "destination": "/api/node/warga" },
     { "source": "/api/balita.php", "destination": "/api/node/balita" },
     { "source": "/api/pemeriksaan.php", "destination": "/api/node/pemeriksaan" }

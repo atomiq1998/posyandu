@@ -95,6 +95,83 @@
     }
   })();
 
+  (function regChangePassword() {
+    const m = document.getElementById('m-cp');
+    const bOpen = document.getElementById('b-change-password');
+    const bx = document.getElementById('m-cp-x');
+    const bok = document.getElementById('m-cp-ok');
+    const emsg = document.getElementById('m-cp-e');
+    const cur = document.getElementById('cp-cur');
+    const nw = document.getElementById('cp-new');
+    const n2 = document.getElementById('cp-new2');
+    if (!m || !bok) {
+      return;
+    }
+    function showErr(t) {
+      if (emsg) {
+        emsg.textContent = t || '';
+        if (t) emsg.removeAttribute('hidden');
+        else emsg.setAttribute('hidden', '');
+      }
+    }
+    function openM() {
+      if (cur) cur.value = '';
+      if (nw) nw.value = '';
+      if (n2) n2.value = '';
+      showErr('');
+      m.removeAttribute('hidden');
+      m.setAttribute('aria-hidden', 'false');
+    }
+    function closeM() {
+      m.setAttribute('hidden', '');
+      m.setAttribute('aria-hidden', 'true');
+    }
+    if (bOpen) {
+      bOpen.addEventListener('click', function () { openM(); });
+    }
+    if (bx) {
+      bx.addEventListener('click', function () { closeM(); });
+    }
+    m.addEventListener('click', function (e) { if (e.target === m) closeM(); });
+    bok.addEventListener('click', function () {
+      showErr('');
+      const a = (nw && nw.value) ? String(nw.value) : '';
+      const b = (n2 && n2.value) ? String(n2.value) : '';
+      if (a !== b) {
+        showErr('Password baru dan ulangan tidak sama.');
+        return;
+      }
+      if (a.length < 8) {
+        showErr('Password baru minimal 8 karakter.');
+        return;
+      }
+      const oldPw = (cur && cur.value) ? String(cur.value) : '';
+      if (!oldPw) {
+        showErr('Isi password lama.');
+        return;
+      }
+      jsend('POST', 'auth/change-password.php', {
+        current_password: oldPw,
+        new_password: a
+      }).then(function (d) {
+        if (d._status === 401) {
+          location.replace('login.html');
+          return;
+        }
+        if (d._status === 400 && d.error) {
+          showErr(d.error);
+          return;
+        }
+        if (d.ok) {
+          closeM();
+          window.alert('Password berhasil diubah.');
+        } else {
+          showErr(d.error || 'Gagal mengubah password');
+        }
+      });
+    });
+  })();
+
   [].forEach.call(document.querySelectorAll('[data-to]'), function (b) {
     b.addEventListener('click', function () {
       showPage(b.getAttribute('data-to'));

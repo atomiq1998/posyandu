@@ -15,6 +15,7 @@
           <button type="button" data-to="warga" class="btn-ghost">Data warga</button>
           <button type="button" data-to="balita" class="btn-ghost">Data balita</button>
           <button type="button" data-to="pemeriksaan" class="btn-ghost">Pemeriksaan</button>
+          <button type="button" id="b-change-password" class="btn btn-ghost" style="border-color: var(--border)">Ubah password</button>
           <button type="button" id="b-logout" class="btn btn-ghost" style="border-color: var(--border)">Keluar</button>
         </div>
       </header>
@@ -292,6 +293,32 @@
           <button type="button" class="btn" id="m-w-d-tutup">Tutup</button>
           <button type="button" class="btn btn-danger" id="m-w-d-hapus">Hapus</button>
           <button type="button" class="btn btn-primary" id="m-w-d-ubah">Ubah data</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="m-cp" class="modal" hidden aria-hidden="true">
+      <div class="card" style="max-width: 400px">
+        <h2>Ubah password</h2>
+        <p class="muted" style="margin: 0.25rem 0 0.5rem; font-size: 0.9rem">Masukkan password lama, lalu password baru (minimal 8 karakter).</p>
+        <form class="form-grid" style="gap: 0.5rem; margin-top: 0.5rem" id="f-cp" onsubmit="return false">
+          <div>
+            <label for="cp-cur">Password lama</label>
+            <input type="password" id="cp-cur" name="cur" required autocomplete="current-password" />
+          </div>
+          <div>
+            <label for="cp-new">Password baru</label>
+            <input type="password" id="cp-new" name="new" required minlength="8" autocomplete="new-password" />
+          </div>
+          <div>
+            <label for="cp-new2">Ulangi password baru</label>
+            <input type="password" id="cp-new2" name="new2" required minlength="8" autocomplete="new-password" />
+          </div>
+        </form>
+        <p id="m-cp-e" class="msg msg-err" hidden></p>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="m-cp-ok">Simpan password</button>
+          <button type="button" class="btn" id="m-cp-x">Batal</button>
         </div>
       </div>
     </div>
