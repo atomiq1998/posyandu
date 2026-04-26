@@ -1,0 +1,4 @@
+# PHP hanya dipakai di XAMPP lokal. Di Vercel API disajikan oleh Node (api/node/* + rewrites di vercel.json).
+# Tanpa ignore ini, api/**/*.php sering muncul sebagai file statis dan memblokir/bentrok dengan rewrite.
+api/**/*.php
+config/db.php
