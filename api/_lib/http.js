@@ -32,6 +32,10 @@ function sendServerError(res, err) {
     error = "Akses database ditolak (periksa DB_USER / DB_PASS).";
   } else if (code === "ER_BAD_DB_ERROR") {
     error = "Nama database tidak ditemukan (periksa DB_NAME).";
+  } else if (code === "ER_NO_SUCH_TABLE" || (msg && /doesn't exist/i.test(msg) && /Table/i.test(msg))) {
+    error = "Tabel belum dibuat. Impor file sql/schema.sql ke MySQL.";
+  } else if (code === "PROTOCOL_CONNECTION_LOST" || (msg && /protocol connection/i.test(msg))) {
+    error = "Koneksi ke database putus. Coba lagi; periksa DB_HOST, firewall, dan SSL (DB_SSL).";
   } else if (
     code === "HANDSHAKE_SSL_ERROR" ||
     code === "DEPTH_ZERO_SELF_SIGNED_CERT" ||
@@ -39,6 +43,10 @@ function sendServerError(res, err) {
   ) {
     error =
       "Koneksi TLS ke database gagal. Coba set DB_SSL=0 jika server tidak memakai TLS, atau hubungi penyedia hosting. Verifikasi CA ketat: DB_SSL_STRICT=1 (butuh CA resmi).";
+  } else if (msg && /Data too long for column|ER_DATA_TOO_LONG/i.test(msg)) {
+    error = "Data melebihi batas di database.";
+  } else if (String(process.env.API_DEBUG) === "1" && (code || msg)) {
+    error = [code, String(msg).slice(0, 200)].filter(Boolean).join(" ");
   }
   return sendJson(res, 500, { ok: false, error });
 }
@@ -56,18 +64,31 @@ function getQuery(req, key) {
 }
 
 async function readJsonBody(req) {
-  if (req.body && typeof req.body === "object") {
-    return req.body;
+  if (Buffer.isBuffer(req.body)) {
+    const s = req.body.toString("utf8");
+    if (!s) return {};
+    try {
+      return JSON.parse(s);
+    } catch (_e) {
+      return {};
+    }
   }
-  if (typeof req.body === "string" && req.body !== "") {
+  if (typeof req.body === "string") {
+    if (req.body === "") return {};
     try {
       return JSON.parse(req.body);
     } catch (_e) {
       return {};
     }
   }
+  if (req.body && typeof req.body === "object" && !Array.isArray(req.body)) {
+    return req.body;
+  }
   const raw = await new Promise((resolve, reject) => {
     let data = "";
+    if (!req || typeof req.on !== "function") {
+      return resolve("");
+    }
     req.on("data", (chunk) => {
       data += chunk;
     });

@@ -27,7 +27,22 @@ module.exports = async (req, res) => {
     }
 
     const hash = String(row.password_hash || "").replace(/^\$2y\$/, "$2b$");
-    const valid = await bcrypt.compare(password, hash);
+    if (!hash) {
+      return sendJson(res, 500, {
+        ok: false,
+        error: "Akun belum disetel password di database.",
+      });
+    }
+    let valid;
+    try {
+      valid = await bcrypt.compare(password, hash);
+    } catch (bErr) {
+      console.error(bErr);
+      return sendJson(res, 500, {
+        ok: false,
+        error: "Gagal memeriksa password. Pastikan kolom password_hash berformat bcrypt (PHP) atau coba set ulang password.",
+      });
+    }
     if (!valid) {
       return sendJson(res, 401, { ok: false, error: "User atau password salah." });
     }
